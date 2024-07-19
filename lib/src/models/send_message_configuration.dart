@@ -68,6 +68,12 @@ class SendMessageConfiguration {
   /// Enable/disable send image from camera. Enabled by default.
   final bool enableCameraImagePicker;
 
+  /// Enable/disable emoji picker
+  final bool enableEmojiPicker;
+
+  /// Widget for emoji picker
+  final Widget? emojiPickerIcon;
+
   /// Color of mic icon when replying to some voice message.
   final Color? micIconColor;
 
@@ -91,9 +97,11 @@ class SendMessageConfiguration {
     this.allowRecordingVoice = true,
     this.enableCameraImagePicker = true,
     this.enableGalleryImagePicker = true,
+    this.enableEmojiPicker = true,
     this.voiceRecordingConfiguration,
     this.micIconColor,
     this.cancelRecordConfiguration,
+    this.emojiPickerIcon,
   });
 }
 
