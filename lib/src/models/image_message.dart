@@ -22,13 +22,14 @@
 import 'package:flutter/material.dart';
 
 import '../values/typedefs.dart';
+import 'message.dart';
 
 class ImageMessageConfiguration {
   /// Provides configuration of share button while image message is appeared.
   final ShareIconConfiguration? shareIconConfig;
 
   /// Provides callback when user taps on image message.
-  final StringCallback? onTap;
+  final Function(Message)? onTap;
 
   /// Used for giving height of image message.
   final double? height;
