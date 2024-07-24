@@ -62,10 +62,8 @@ class ChatView extends StatefulWidget {
     this.emojiPickerSheetConfig,
     this.replyMessageBuilder,
     this.replySuggestionsConfig,
-  })  : chatBackgroundConfig =
-            chatBackgroundConfig ?? const ChatBackgroundConfiguration(),
-        chatViewStateConfig =
-            chatViewStateConfig ?? const ChatViewStateConfiguration(),
+  })  : chatBackgroundConfig = chatBackgroundConfig ?? const ChatBackgroundConfiguration(),
+        chatViewStateConfig = chatViewStateConfig ?? const ChatViewStateConfiguration(),
         super(key: key);
 
   /// Provides configuration related to user profile circle avatar.
@@ -157,21 +155,17 @@ class ChatView extends StatefulWidget {
   State<ChatView> createState() => _ChatViewState();
 }
 
-class _ChatViewState extends State<ChatView>
-    with SingleTickerProviderStateMixin {
+class _ChatViewState extends State<ChatView> with SingleTickerProviderStateMixin {
   final GlobalKey<SendMessageWidgetState> _sendMessageKey = GlobalKey();
-  ValueNotifier<ReplyMessage> replyMessage =
-      ValueNotifier(const ReplyMessage());
+  ValueNotifier<ReplyMessage> replyMessage = ValueNotifier(const ReplyMessage());
 
   ChatController get chatController => widget.chatController;
 
-  ChatBackgroundConfiguration get chatBackgroundConfig =>
-      widget.chatBackgroundConfig;
+  ChatBackgroundConfiguration get chatBackgroundConfig => widget.chatBackgroundConfig;
 
   ChatViewState get chatViewState => widget.chatViewState;
 
-  ChatViewStateConfiguration? get chatViewStateConfig =>
-      widget.chatViewStateConfig;
+  ChatViewStateConfiguration? get chatViewStateConfig => widget.chatViewStateConfig;
 
   FeatureActiveConfig get featureActiveConfig => widget.featureActiveConfig;
 
@@ -184,8 +178,7 @@ class _ChatViewState extends State<ChatView>
   @override
   Widget build(BuildContext context) {
     // Scroll to last message on in hasMessages state.
-    if (widget.chatController.showTypingIndicator &&
-        chatViewState.hasMessages) {
+    if (widget.chatController.showTypingIndicator && chatViewState.hasMessages) {
       chatController.scrollToLastMessage();
     }
     return ChatViewInheritedWidget(
@@ -198,17 +191,14 @@ class _ChatViewState extends State<ChatView>
           return Stack(
             children: [
               Container(
-                height: chatBackgroundConfig.height ??
-                    MediaQuery.of(context).size.height,
-                width:
-                    chatBackgroundConfig.width ?? MediaQuery.of(context).size.width,
+                height: chatBackgroundConfig.height ?? MediaQuery.of(context).size.height,
+                width: chatBackgroundConfig.width ?? MediaQuery.of(context).size.width,
                 decoration: BoxDecoration(
                   color: chatBackgroundConfig.backgroundColor ?? Colors.white,
                   image: chatBackgroundConfig.backgroundImage != null
                       ? DecorationImage(
                           fit: BoxFit.fill,
-                          image:
-                              NetworkImage(chatBackgroundConfig.backgroundImage!),
+                          image: NetworkImage(chatBackgroundConfig.backgroundImage!),
                         )
                       : null,
                 ),
@@ -233,25 +223,20 @@ class _ChatViewState extends State<ChatView>
                           children: [
                             if (chatViewState.isLoading)
                               ChatViewStateWidget(
-                                chatViewStateWidgetConfig:
-                                    chatViewStateConfig?.loadingWidgetConfig,
+                                chatViewStateWidgetConfig: chatViewStateConfig?.loadingWidgetConfig,
                                 chatViewState: chatViewState,
                               )
                             else if (chatViewState.noMessages)
                               ChatViewStateWidget(
-                                chatViewStateWidgetConfig:
-                                    chatViewStateConfig?.noMessageWidgetConfig,
+                                chatViewStateWidgetConfig: chatViewStateConfig?.noMessageWidgetConfig,
                                 chatViewState: chatViewState,
-                                onReloadButtonTap:
-                                    chatViewStateConfig?.onReloadButtonTap,
+                                onReloadButtonTap: chatViewStateConfig?.onReloadButtonTap,
                               )
                             else if (chatViewState.isError)
                               ChatViewStateWidget(
-                                chatViewStateWidgetConfig:
-                                    chatViewStateConfig?.errorWidgetConfig,
+                                chatViewStateWidgetConfig: chatViewStateConfig?.errorWidgetConfig,
                                 chatViewState: chatViewState,
-                                onReloadButtonTap:
-                                    chatViewStateConfig?.onReloadButtonTap,
+                                onReloadButtonTap: chatViewStateConfig?.onReloadButtonTap,
                               )
                             else if (chatViewState.hasMessages)
                               ValueListenableBuilder<ReplyMessage>(
@@ -264,9 +249,8 @@ class _ChatViewState extends State<ChatView>
                                     isLastPage: widget.isLastPage,
                                     loadingWidget: widget.loadingWidget,
                                     onChatListTap: widget.onChatListTap,
-                                    assignReplyMessage: (message) => _sendMessageKey
-                                        .currentState
-                                        ?.assignReplyMessage(message),
+                                    assignReplyMessage: (message) =>
+                                        _sendMessageKey.currentState?.assignReplyMessage(message),
                                   );
                                 },
                               ),
@@ -276,17 +260,13 @@ class _ChatViewState extends State<ChatView>
                                 sendMessageBuilder: widget.sendMessageBuilder,
                                 sendMessageConfig: widget.sendMessageConfig,
                                 onSendTap: (message, replyMessage, messageType) {
-                                  if (context.suggestionsConfig
-                                          ?.autoDismissOnSelection ??
-                                      true) {
+                                  if (context.suggestionsConfig?.autoDismissOnSelection ?? true) {
                                     chatController.removeReplySuggestions();
                                   }
                                   _onSendTap(message, replyMessage, messageType);
                                 },
-                                onReplyCallback: (reply) =>
-                                    replyMessage.value = reply,
-                                onReplyCloseCallback: () =>
-                                    replyMessage.value = const ReplyMessage(),
+                                onReplyCallback: (reply) => replyMessage.value = reply,
+                                onReplyCloseCallback: () => replyMessage.value = const ReplyMessage(),
                                 messageConfig: widget.messageConfig,
                                 replyMessageBuilder: widget.replyMessageBuilder,
                               ),
@@ -305,6 +285,7 @@ class _ChatViewState extends State<ChatView>
                       key: context.chatViewIW!.reactionPopupKey,
                       onTap: () => _onChatListTap(context),
                       showPopUp: showPopupValue,
+                      reactionPopupConfig: widget.reactionPopupConfig,
                     );
                   },
                 ),
