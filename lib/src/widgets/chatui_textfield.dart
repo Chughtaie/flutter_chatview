@@ -211,7 +211,12 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
               ValueListenableBuilder<String>(
                 valueListenable: _inputText,
                 builder: (_, inputTextValue, child) {
-                  if (inputTextValue.isNotEmpty) {
+                  final trimmedText = inputTextValue.trim();
+                  // Check if the trimmed text is not empty or contains only emoji characters
+                  final isNotEmptyOrEmoji = trimmedText.isNotEmpty ||
+                      _containsOnlyEmojis(trimmedText);
+
+                  if (isNotEmptyOrEmoji) {
                     return IconButton(
                       color: sendMessageConfig?.defaultSendButtonColor ??
                           Colors.green,
@@ -299,12 +304,19 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
                     );
                   }
                 },
-              ),
+              )
             ],
           );
         },
       ),
     );
+  }
+
+  bool _containsOnlyEmojis(String text) {
+    // Simple check to determine if the text contains only emojis.
+    // This may need refinement based on specific emoji ranges.
+    final emojiRegex = RegExp(r'^[\p{So}\p{Sk}]+$', unicode: true);
+    return emojiRegex.hasMatch(text);
   }
 
   FutureOr<void> _cancelRecording() async {
