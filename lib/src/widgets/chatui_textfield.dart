@@ -23,7 +23,10 @@ import 'dart:async';
 import 'dart:io' show File, Platform;
 
 import 'package:audio_waveforms/audio_waveforms.dart';
+import 'package:chatview/src/extensions/extensions.dart';
 import 'package:chatview/src/utils/constants/constants.dart';
+import 'package:chatview/src/widgets/emoji_picker_widget.dart';
+import 'package:dart_emoji/dart_emoji.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -189,6 +192,17 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
                     decoration: InputDecoration(
                       hintText:
                           textFieldConfig?.hintText ?? PackageStrings.message,
+                      prefixIcon: !(widget
+                                  .sendMessageConfig?.enableEmojiPicker ??
+                              false)
+                          ? null
+                          : IconButton(
+                              icon: widget.sendMessageConfig?.emojiPickerIcon ??
+                                  const Icon(
+                                    Icons.emoji_emotions_outlined,
+                                  ),
+                              onPressed: () => _showBottomSheet(context),
+                            ),
                       fillColor: sendMessageConfig?.textFieldBackgroundColor ??
                           Colors.white,
                       filled: true,
@@ -212,11 +226,17 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
                 valueListenable: _inputText,
                 builder: (_, inputTextValue, child) {
                   final trimmedText = inputTextValue.trim();
-                  // Check if the trimmed text is not empty or contains only emoji characters
-                  final isNotEmptyOrEmoji = trimmedText.isNotEmpty ||
-                      _containsOnlyEmojis(trimmedText);
+                  // Check if the trimmed text is not empty
+                  final isNotEmpty = trimmedText.isNotEmpty;
 
-                  if (isNotEmptyOrEmoji) {
+                  // Check if the trimmed text contains only emojis
+                  final isOnlyEmoji = EmojiUtil.hasOnlyEmojis(trimmedText);
+
+                  // Determine if the IconButton should be shown
+                  final showSendButton = isNotEmpty || !isOnlyEmoji;
+                  ;
+
+                  if (showSendButton) {
                     return IconButton(
                       color: sendMessageConfig?.defaultSendButtonColor ??
                           Colors.green,
@@ -312,11 +332,23 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
     );
   }
 
-  bool _containsOnlyEmojis(String text) {
-    // Simple check to determine if the text contains only emojis.
-    // This may need refinement based on specific emoji ranges.
-    final emojiRegex = RegExp(r'^[\p{So}\p{Sk}]+$', unicode: true);
-    return emojiRegex.hasMatch(text);
+  void _showBottomSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (newContext) => EmojiPickerWidget(
+        emojiPickerSheetConfig: context.chatListConfig.emojiPickerSheetConfig,
+        onSelected: (emoji) {
+          Navigator.pop(newContext);
+          // Get the current text and add the selected emoji
+          final updatedText = widget.textEditingController.text + emoji;
+          widget.textEditingController.text = updatedText;
+          _inputText.value = updatedText; // Notify listeners of the new text
+          widget.textEditingController.selection = TextSelection.fromPosition(
+            TextPosition(offset: updatedText.length),
+          ); // Move cursor to the end
+        },
+      ),
+    );
   }
 
   FutureOr<void> _cancelRecording() async {
