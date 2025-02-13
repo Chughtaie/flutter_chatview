@@ -155,10 +155,11 @@ class _VoiceMessageViewState extends State<VoiceMessageView> {
           defaultTargetPlatform == TargetPlatform.android,
       "Voice messages are only supported with android and ios platform",
     );
+
     if (playerState.isInitialised ||
         playerState.isPaused ||
         playerState.isStopped) {
-      controller.startPlayer(finishMode: FinishMode.pause);
+      controller.startPlayer(); // Remove finishMode parameter
     } else {
       controller.pausePlayer();
     }
