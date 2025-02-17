@@ -175,12 +175,18 @@ class _ChatViewState extends State<ChatView>
 
   FeatureActiveConfig get featureActiveConfig => widget.featureActiveConfig;
 
+  // Add this line: Store a reference to the showPopUp ValueNotifier
+  ValueNotifier<bool>? _showPopUp;
+
   @override
   void initState() {
     super.initState();
     setLocaleMessages('en', ReceiptsCustomMessages());
   }
-
+ @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
   @override
   Widget build(BuildContext context) {
     // Scroll to last message on in hasMessages state.
@@ -188,6 +194,9 @@ class _ChatViewState extends State<ChatView>
         chatViewState.hasMessages) {
       chatController.scrollToLastMessage();
     }
+    // Add this line: Store the reference to showPopUp here
+    _showPopUp = context.chatViewIW?.showPopUp;
+
     return ChatViewInheritedWidget(
       chatController: chatController,
       featureActiveConfig: featureActiveConfig,
@@ -349,7 +358,8 @@ class _ChatViewState extends State<ChatView>
   @override
   void dispose() {
     replyMessage.dispose();
-    chatViewIW?.showPopUp.dispose();
+    // Modify this line: Use the stored _showPopUp instead of chatViewIW
+    _showPopUp?.dispose();
     super.dispose();
   }
 }
