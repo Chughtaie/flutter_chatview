@@ -82,6 +82,8 @@ class _ChatListWidgetState extends State<ChatListWidget>
   FeatureActiveConfig? featureActiveConfig;
   ChatUser? currentUser;
 
+  ValueNotifier<bool>? _showPopUp;
+
   @override
   void initState() {
     super.initState();
@@ -92,6 +94,7 @@ class _ChatListWidgetState extends State<ChatListWidget>
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (chatViewIW != null) {
+      _showPopUp = context.chatViewIW?.showPopUp;
       featureActiveConfig = chatViewIW!.featureActiveConfig;
       currentUser = chatViewIW!.chatController.currentUser;
     }
@@ -133,7 +136,7 @@ class _ChatListWidgetState extends State<ChatListWidget>
         ),
         Expanded(
           child: ValueListenableBuilder<bool>(
-            valueListenable: chatViewIW!.showPopUp,
+            valueListenable: _showPopUp!,
             builder: (_, showPopupValue, child) {
               return Stack(
                 children: [
@@ -151,7 +154,7 @@ class _ChatListWidgetState extends State<ChatListWidget>
                           xCoordinate: xCoordinate,
                           yCoordinate: yCoordinate,
                         );
-                        chatViewIW?.showPopUp.value = true;
+                        _showPopUp?.value = true;
                       }
                       if (featureActiveConfig?.enableReplySnackBar ?? false) {
                         _showReplyPopup(
@@ -220,7 +223,7 @@ class _ChatListWidgetState extends State<ChatListWidget>
                     onReplyTap: () {
                       widget.assignReplyMessage(message);
                       if (featureActiveConfig?.enableReactionPopup ?? false) {
-                        chatViewIW?.showPopUp.value = false;
+                        _showPopUp?.value = false;
                       }
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       if (replyPopup?.onReplyTap != null) {
@@ -240,13 +243,13 @@ class _ChatListWidgetState extends State<ChatListWidget>
     if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
       FocusScope.of(context).unfocus();
     }
-    chatViewIW?.showPopUp.value = false;
+    _showPopUp?.value = false;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
   }
 
   @override
   void dispose() {
-    chatViewIW?.chatController.messageStreamController.close();
+   // chatViewIW?.chatController.messageStreamController.close();
     scrollController.dispose();
     _isNextPageLoading.dispose();
     super.dispose();

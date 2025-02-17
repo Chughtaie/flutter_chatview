@@ -20,7 +20,22 @@ class Example extends StatelessWidget {
         colorScheme:
             ColorScheme.fromSwatch(accentColor: const Color(0xffEE5366)),
       ),
-      home: const ChatScreen(),
+      home: const HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: GestureDetector(
+        onTap: (){
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatScreen()));
+        },
+          child: const Center(child: Text('Chat Screen'),)),
     );
   }
 }

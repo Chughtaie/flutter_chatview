@@ -168,7 +168,8 @@ class _ChatViewState extends State<ChatView> with SingleTickerProviderStateMixin
   ChatViewStateConfiguration? get chatViewStateConfig => widget.chatViewStateConfig;
 
   FeatureActiveConfig get featureActiveConfig => widget.featureActiveConfig;
-
+  // Add this line: Store a reference to the showPopUp ValueNotifier
+  ValueNotifier<bool>? _showPopUp;
   @override
   void initState() {
     super.initState();
@@ -181,6 +182,9 @@ class _ChatViewState extends State<ChatView> with SingleTickerProviderStateMixin
     if (widget.chatController.showTypingIndicator && chatViewState.hasMessages) {
       chatController.scrollToLastMessage();
     }
+    // Add this line: Store the reference to showPopUp here
+    _showPopUp = context.chatViewIW?.showPopUp;
+
     return ChatViewInheritedWidget(
       chatController: chatController,
       featureActiveConfig: featureActiveConfig,
@@ -330,7 +334,7 @@ class _ChatViewState extends State<ChatView> with SingleTickerProviderStateMixin
   @override
   void dispose() {
     replyMessage.dispose();
-    chatViewIW?.showPopUp.dispose();
+    _showPopUp?.dispose();
     super.dispose();
   }
 }
