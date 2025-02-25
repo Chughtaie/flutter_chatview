@@ -20,7 +20,6 @@
  * SOFTWARE.
  */
 import 'dart:io';
-
 import 'package:chatview/chatview.dart';
 import 'package:chatview/src/extensions/extensions.dart';
 import 'package:chatview/src/inherited_widgets/configurations_inherited_widgets.dart';

@@ -214,8 +214,7 @@ class _ChatScreenState extends State<ChatScreen> {
               bodyStyle: theme.outgoingChatLinkBodyStyle,
               titleStyle: theme.outgoingChatLinkTitleStyle,
             ),
-            receiptsWidgetConfig:
-                const ReceiptsWidgetConfig(showReceiptsIn: ShowReceiptsIn.all),
+            receiptsWidgetConfig: const ReceiptsWidgetConfig(showReceiptsIn: ShowReceiptsIn.all),
             color: theme.outgoingChatBubbleColor,
           ),
           inComingChatBubbleConfig: ChatBubble(
@@ -233,8 +232,7 @@ class _ChatScreenState extends State<ChatScreen> {
               /// send your message reciepts to the other client
               debugPrint('Message Read');
             },
-            senderNameTextStyle:
-                TextStyle(color: theme.inComingChatBubbleTextColor),
+            senderNameTextStyle: TextStyle(color: theme.inComingChatBubbleTextColor),
             color: theme.inComingChatBubbleColor,
           ),
         ),

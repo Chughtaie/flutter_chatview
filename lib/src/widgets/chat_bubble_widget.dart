@@ -280,23 +280,17 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
                       ?.call(widget.message.replyMessage.messageId),
                 ),
         MessageView(
-          outgoingChatBubbleConfig:
-              chatListConfig.chatBubbleConfig?.outgoingChatBubbleConfig,
-          isLongPressEnable:
-              (featureActiveConfig?.enableReactionPopup ?? true) ||
-                  (featureActiveConfig?.enableReplySnackBar ?? true),
-          inComingChatBubbleConfig:
-              chatListConfig.chatBubbleConfig?.inComingChatBubbleConfig,
+          outgoingChatBubbleConfig: chatListConfig.chatBubbleConfig?.outgoingChatBubbleConfig,
+          isLongPressEnable: (featureActiveConfig?.enableReactionPopup ?? true) || (featureActiveConfig?.enableReplySnackBar ?? true),
+          inComingChatBubbleConfig: chatListConfig.chatBubbleConfig?.inComingChatBubbleConfig,
           message: widget.message,
           isMessageBySender: isMessageBySender,
           messageConfig: chatListConfig.messageConfig,
           onLongPress: widget.onLongPress,
           chatBubbleMaxWidth: chatListConfig.chatBubbleConfig?.maxWidth,
-          longPressAnimationDuration:
-              chatListConfig.chatBubbleConfig?.longPressAnimationDuration,
+          longPressAnimationDuration: chatListConfig.chatBubbleConfig?.longPressAnimationDuration,
           onDoubleTap: featureActiveConfig?.enableDoubleTapToLike ?? false
-              ? chatListConfig.chatBubbleConfig?.onDoubleTap ??
-                  (message) => currentUser != null
+              ? chatListConfig.chatBubbleConfig?.onDoubleTap ?? (message) => currentUser != null
                       ? chatController?.setReaction(
                           emoji: heart,
                           messageId: message.id,
@@ -306,9 +300,7 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
               : null,
           shouldHighlight: widget.shouldHighlight,
           controller: chatController,
-          highlightColor: chatListConfig.repliedMessageConfig
-                  ?.repliedMsgAutoScrollConfig.highlightColor ??
-              Colors.grey,
+          highlightColor: chatListConfig.repliedMessageConfig?.repliedMsgAutoScrollConfig.highlightColor ??Colors.grey,
           highlightScale: chatListConfig.repliedMessageConfig
                   ?.repliedMsgAutoScrollConfig.highlightScale ??
               1.1,

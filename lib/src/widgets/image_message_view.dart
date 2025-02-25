@@ -21,9 +21,11 @@
  */
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:chatview/src/extensions/extensions.dart';
 import 'package:chatview/src/models/models.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'reaction_widget.dart';
@@ -58,12 +60,13 @@ class ImageMessageView extends StatelessWidget {
   /// Provides scale of highlighted image when user taps on replied image.
   final double highlightScale;
 
+
   String get imageUrl => message.message;
 
   Widget get iconButton => ShareIcon(
-        shareIconConfig: imageMessageConfig?.shareIconConfig,
-        imageUrl: imageUrl,
-      );
+    shareIconConfig: imageMessageConfig?.shareIconConfig,
+    imageUrl: imageUrl,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -92,35 +95,24 @@ class ImageMessageView extends StatelessWidget {
                   width: imageMessageConfig?.width ?? 150,
                   child: ClipRRect(
                     borderRadius: imageMessageConfig?.borderRadius ?? BorderRadius.circular(14),
-                    child: (() {
-                      if (imageUrl.isUrl) {
-                        return Image.network(
-                          imageUrl,
-                          fit: BoxFit.fitHeight,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Center(
-                              child: CircularProgressIndicator(
-                                color: imageMessageConfig?.loaderColor,
-                                value: loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                    : null,
-                              ),
-                            );
-                          },
-                        );
-                      } else if (imageUrl.fromMemory) {
-                        return Image.memory(
-                          base64Decode(imageUrl.substring(imageUrl.indexOf('base64') + 7)),
-                          fit: BoxFit.fill,
-                        );
-                      } else {
-                        return Image.file(
-                          File(imageUrl),
-                          fit: BoxFit.fill,
-                        );
-                      }
-                    }()),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        _buildImageWidget(),
+                        if (imageMessageConfig!.showBlurImage && !isMessageBySender)
+                          BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                            child: Container(
+                              color: Colors.white.withOpacity(0.3),
+                            ),
+                          ),
+                        if (imageMessageConfig!.showBlurImage && imageMessageConfig?.imageCenterButton != null && !isMessageBySender)
+                          Center(
+                            child: imageMessageConfig?.imageCenterButton,
+                          ),
+
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -136,5 +128,64 @@ class ImageMessageView extends StatelessWidget {
         if (!isMessageBySender) iconButton,
       ],
     );
+  }
+
+  Widget _buildImageWidget() {
+    if (imageUrl.isUrl) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          // Cupertino loading indicator
+          Center(
+            child: CupertinoActivityIndicator(
+              radius: 12,
+              color: imageMessageConfig?.loaderColor,
+            ),
+          ),
+
+          // Actual image with blur effect when needed
+          Image.network(
+            imageUrl,
+            fit: BoxFit.fitHeight,
+            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+              if (frame == null) {
+                return const SizedBox.shrink();
+              }
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  child,
+                  if (imageMessageConfig!.showBlurImage && !isMessageBySender)
+                    BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                      child: Container(
+                        color: Colors.black.withOpacity(0.3),
+                      ),
+                    ),
+                  if (imageMessageConfig!.showBlurImage && imageMessageConfig?.imageCenterButton != null && !isMessageBySender)
+                    Center(
+                      child: imageMessageConfig?.imageCenterButton,
+                    ),
+                ],
+              );
+            },
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return child; // Return the frameBuilder's result, which will be empty until loaded
+            },
+          ),
+        ],
+      );
+    } else if (imageUrl.fromMemory) {
+      return Image.memory(
+        base64Decode(imageUrl.substring(imageUrl.indexOf('base64') + 7)),
+        fit: BoxFit.fill,
+      );
+    } else {
+      return Image.file(
+        File(imageUrl),
+        fit: BoxFit.fill,
+      );
+    }
   }
 }

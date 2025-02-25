@@ -69,9 +69,7 @@ class Message {
         _status = ValueNotifier(status),
         assert(
           (messageType.isVoice
-              ? ((defaultTargetPlatform == TargetPlatform.iOS ||
-                  defaultTargetPlatform == TargetPlatform.android))
-              : true),
+              ? ((defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android)) : true),
           "Voice messages are only supported with android and ios platform",
         );
 
