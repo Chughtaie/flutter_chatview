@@ -24,6 +24,7 @@ dependencies:
   timeago: ^3.6.1
   cached_network_image: ^3.3.1
   dart_emoji: ^0.2.0+2
+  speech_to_text: ^6.6.2
 
 dev_dependencies:
   flutter_test:

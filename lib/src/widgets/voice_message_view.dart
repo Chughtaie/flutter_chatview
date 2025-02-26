@@ -67,8 +67,16 @@ class _VoiceMessageViewState extends State<VoiceMessageView> {
                 ?.getSamplesForWidth(widget.screenWidth * 0.5) ??
             playerWaveStyle.getSamplesForWidth(widget.screenWidth * 0.5),
       ).whenComplete(() => widget.onMaxDuration?.call(controller.maxDuration));
-    playerStateSubscription = controller.onPlayerStateChanged
-        .listen((state) => _playerState.value = state);
+    playerStateSubscription = controller.onPlayerStateChanged.listen((state) {
+      _playerState.value = state;
+      if (state == PlayerState.stopped) {
+        controller.preparePlayer(path: widget.message.message).then((_) {
+          controller.seekTo(0); // Reset position to start for replay
+        });
+      }
+    });
+
+
   }
 
   @override
@@ -106,8 +114,7 @@ class _VoiceMessageViewState extends State<VoiceMessageView> {
                 builder: (context, state, child) {
                   return IconButton(
                     onPressed: _playOrPause,
-                    icon:
-                        state.isStopped || state.isPaused || state.isInitialised
+                    icon: state.isStopped || state.isPaused || state.isInitialised
                             ? widget.config?.playIcon ??
                                 const Icon(
                                   Icons.play_arrow,
@@ -115,7 +122,7 @@ class _VoiceMessageViewState extends State<VoiceMessageView> {
                                 )
                             : widget.config?.pauseIcon ??
                                 const Icon(
-                                  Icons.stop,
+                                  Icons.pause,
                                   color: Colors.white,
                                 ),
                   );
@@ -151,17 +158,22 @@ class _VoiceMessageViewState extends State<VoiceMessageView> {
 
   void _playOrPause() {
     assert(
-      defaultTargetPlatform == TargetPlatform.iOS ||
-          defaultTargetPlatform == TargetPlatform.android,
-      "Voice messages are only supported with android and ios platform",
+    defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.android,
+    "Voice messages are only supported with android and ios platform",
     );
 
-    if (playerState.isInitialised ||
-        playerState.isPaused ||
-        playerState.isStopped) {
-      controller.startPlayer(); // Remove finishMode parameter
+    if (playerState.isInitialised || playerState.isPaused || playerState.isStopped) {
+      if (playerState == PlayerState.stopped) {
+        debugPrint("player stopped");
+        controller.preparePlayer(path: widget.message.message).then((_) {
+          controller.seekTo(0); // Reset position to start for replay
+        });
+      }
+      controller.startPlayer();
     } else {
       controller.pausePlayer();
     }
   }
+
 }

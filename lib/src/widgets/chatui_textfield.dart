@@ -20,8 +20,9 @@
  * SOFTWARE.
  */
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io' show File, Platform;
-
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:chatview/src/extensions/extensions.dart';
 import 'package:chatview/src/utils/constants/constants.dart';
@@ -30,7 +31,6 @@ import 'package:dart_emoji/dart_emoji.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
 import '../../chatview.dart';
 import '../utils/debounce.dart';
 import '../utils/package_strings.dart';
@@ -75,13 +75,13 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
 
   RecorderController? controller;
 
+  String recognizedText = "Value";
+
   ValueNotifier<bool> isRecording = ValueNotifier(false);
 
   SendMessageConfiguration? get sendMessageConfig => widget.sendMessageConfig;
 
-  VoiceRecordingConfiguration? get voiceRecordingConfig =>
-      widget.sendMessageConfig?.voiceRecordingConfiguration;
-
+  VoiceRecordingConfiguration? get voiceRecordingConfig => widget.sendMessageConfig?.voiceRecordingConfiguration;
   ImagePickerIconsConfiguration? get imagePickerIconsConfig =>
       sendMessageConfig?.imagePickerIconsConfig;
 
@@ -357,27 +357,82 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
     isRecording.value = false;
   }
 
+  // Future<void> _recordOrStop() async {
+  //   assert(
+  //     defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android,
+  //     "Voice messages are only supported with android and ios platform",
+  //   );
+  //   if (!isRecording.value) {
+  //     await controller?.record(
+  //       sampleRate: voiceRecordingConfig?.sampleRate,
+  //       bitRate: voiceRecordingConfig?.bitRate,
+  //       androidEncoder: voiceRecordingConfig?.androidEncoder,
+  //       iosEncoder: voiceRecordingConfig?.iosEncoder,
+  //       androidOutputFormat: voiceRecordingConfig?.androidOutputFormat,
+  //     );
+  //     isRecording.value = true;
+  //   } else {
+  //     final path = await controller?.stop();
+  //     isRecording.value = false;
+  //     widget.onRecordingComplete(path);
+  //   }
+  // }
+
+
   Future<void> _recordOrStop() async {
     assert(
-      defaultTargetPlatform == TargetPlatform.iOS ||
-          defaultTargetPlatform == TargetPlatform.android,
-      "Voice messages are only supported with android and ios platform",
+    defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.android,
+    "Voice messages are only supported with android and ios platform",
     );
+
+    final stt.SpeechToText speech = stt.SpeechToText();
+    bool isSpeechAvailable = false;
+
     if (!isRecording.value) {
-      await controller?.record(
-        sampleRate: voiceRecordingConfig?.sampleRate,
-        bitRate: voiceRecordingConfig?.bitRate,
-        androidEncoder: voiceRecordingConfig?.androidEncoder,
-        iosEncoder: voiceRecordingConfig?.iosEncoder,
-        androidOutputFormat: voiceRecordingConfig?.androidOutputFormat,
-      );
-      isRecording.value = true;
+      // Start recording and speech recognition
+      isSpeechAvailable = await speech.initialize();
+      if (isSpeechAvailable) {
+        speech.listen(
+          onResult: (result) {
+            recognizedText = result.recognizedWords; // Update recognized text
+            debugPrint("Recognized Text: $recognizedText");
+          },
+          listenFor: const Duration(minutes: 1), // Listen for a longer duration
+          pauseFor: const Duration(seconds: 5), // Pause for a short duration
+        partialResults: true
+        );
+
+        await controller?.record(
+          sampleRate: voiceRecordingConfig?.sampleRate,
+          bitRate: voiceRecordingConfig?.bitRate,
+          androidEncoder: voiceRecordingConfig?.androidEncoder,
+          iosEncoder: voiceRecordingConfig?.iosEncoder,
+          androidOutputFormat: voiceRecordingConfig?.androidOutputFormat,
+        );
+        isRecording.value = true;
+      } else {
+        print("Speech recognition not available");
+      }
     } else {
+      // Stop recording and speech recognition
       final path = await controller?.stop();
+      speech.stop();
+      // Ensure recognizedText is updated
+      debugPrint("Final Recognized Text: $recognizedText");
+      // Convert map to JSON string
+      String result = jsonEncode({
+        "path": path,
+        "text": recognizedText,
+      });
+
+
+      // Send the result
+      widget.onRecordingComplete(result);
       isRecording.value = false;
-      widget.onRecordingComplete(path);
     }
   }
+
 
   void _onIconPressed(
     ImageSource imageSource, {

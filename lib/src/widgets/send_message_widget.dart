@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+import 'dart:convert';
 import 'dart:io' if (kIsWeb) 'dart:html';
 
 import 'package:chatview/chatview.dart';
@@ -244,10 +245,30 @@ class SendMessageWidgetState extends State<SendMessageWidget> {
     );
   }
 
-  void _onRecordingComplete(String? path) {
-    if (path != null) {
-      widget.onSendTap.call(path, replyMessage, MessageType.voice);
-      _assignRepliedMessage();
+  // void _onRecordingComplete(String? path) {
+  //   if (path != null) {
+  //     widget.onSendTap.call(path, replyMessage, MessageType.voice);
+  //     _assignRepliedMessage();
+  //   }
+  // }
+// speech to text implementation
+  void _onRecordingComplete(String? result) {
+    if (result != null) {
+      try {
+        final data = jsonDecode(result);
+        final audioPath = data['path'];
+        final transcribedText = data['text'];
+
+        // Send both path and text to onSendTap
+        widget.onSendTap.call(
+          jsonEncode({"path": audioPath, "text": transcribedText}),
+          replyMessage,
+          MessageType.voice,
+        );
+        _assignRepliedMessage();
+      } catch (e) {
+        print("Error decoding recording result: $e");
+      }
     }
   }
 

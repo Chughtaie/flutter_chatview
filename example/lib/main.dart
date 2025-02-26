@@ -112,6 +112,7 @@ class _ChatScreenState extends State<ChatScreen> {
         featureActiveConfig: const FeatureActiveConfig(
           lastSeenAgoBuilderVisibility: true,
           receiptsBuilderVisibility: true,
+          enableTextField: true
         ),
         chatViewState: ChatViewState.hasMessages,
         chatViewStateConfig: ChatViewStateConfiguration(
@@ -182,12 +183,6 @@ class _ChatScreenState extends State<ChatScreen> {
             cameraIconColor: theme.cameraIconColor,
             galleryIconColor: theme.galleryIconColor,
           ),
-          replyMessageColor: theme.replyMessageColor,
-          defaultSendButtonColor: theme.sendButtonColor,
-          replyDialogColor: theme.replyDialogColor,
-          replyTitleColor: theme.replyTitleColor,
-          textFieldBackgroundColor: theme.textFieldBackgroundColor,
-          closeIconColor: theme.closeIconColor,
           textFieldConfig: TextFieldConfiguration(
             onMessageTyping: (status) {
               /// Do with status
@@ -196,7 +191,6 @@ class _ChatScreenState extends State<ChatScreen> {
             compositionThresholdTime: const Duration(seconds: 1),
             textStyle: TextStyle(color: theme.textFieldTextColor),
           ),
-          micIconColor: theme.replyMicIconColor,
           voiceRecordingConfiguration: VoiceRecordingConfiguration(
             backgroundColor: theme.waveformBackgroundColor,
             recorderIconColor: theme.recordIconColor,
@@ -206,6 +200,13 @@ class _ChatScreenState extends State<ChatScreen> {
               extendWaveform: true,
             ),
           ),
+          micIconColor: theme.replyMicIconColor,
+          replyMessageColor: theme.replyMessageColor,
+          defaultSendButtonColor: theme.sendButtonColor,
+          replyDialogColor: theme.replyDialogColor,
+          replyTitleColor: theme.replyTitleColor,
+          textFieldBackgroundColor: theme.textFieldBackgroundColor,
+          closeIconColor: theme.closeIconColor,
         ),
         chatBubbleConfig: ChatBubbleConfiguration(
           outgoingChatBubbleConfig: ChatBubble(
@@ -316,8 +317,7 @@ class _ChatScreenState extends State<ChatScreen> {
               color: isDarkTheme ? Colors.white : Colors.black,
             ),
           ),
-          onTap: (item) =>
-              _onSendTap(item.text, const ReplyMessage(), MessageType.text),
+          onTap: (item) => _onSendTap(item.text, const ReplyMessage(), MessageType.text),
         ),
       ),
     );
