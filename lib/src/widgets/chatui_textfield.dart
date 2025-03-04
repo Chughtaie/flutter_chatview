@@ -426,7 +426,6 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
         "text": recognizedText,
       });
 
-
       // Send the result
       widget.onRecordingComplete(result);
       isRecording.value = false;

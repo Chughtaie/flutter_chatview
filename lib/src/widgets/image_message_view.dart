@@ -125,7 +125,7 @@ class ImageMessageView extends StatelessWidget {
               ),
           ],
         ),
-        if (!isMessageBySender) iconButton,
+       // if (!isMessageBySender) iconButton,
       ],
     );
   }
