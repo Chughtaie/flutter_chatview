@@ -25,6 +25,7 @@ dependencies:
   cached_network_image: ^3.3.1
   dart_emoji: ^0.2.0+2
   speech_to_text: ^6.6.2
+  permission_handler: ^11.4.0
 
 dev_dependencies:
   flutter_test:

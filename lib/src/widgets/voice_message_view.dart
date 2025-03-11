@@ -1,8 +1,6 @@
 import 'dart:async';
-
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:chatview/chatview.dart';
-import 'package:chatview/src/models/voice_message_configuration.dart';
 import 'package:chatview/src/widgets/reaction_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -60,6 +58,7 @@ class _VoiceMessageViewState extends State<VoiceMessageView> {
   @override
   void initState() {
     super.initState();
+    debugPrint("Audio path: ${widget.message.message}");
     controller = PlayerController()
       ..preparePlayer(
         path: widget.message.message,
@@ -70,14 +69,20 @@ class _VoiceMessageViewState extends State<VoiceMessageView> {
     playerStateSubscription = controller.onPlayerStateChanged.listen((state) {
       _playerState.value = state;
       if (state == PlayerState.stopped) {
-        controller.preparePlayer(path: widget.message.message).then((_) {
-          controller.seekTo(0); // Reset position to start for replay
+        controller.preparePlayer(
+            path: widget.message.message,
+            noOfSamples: widget.config?.playerWaveStyle
+            ?.getSamplesForWidth(widget.screenWidth * 0.5) ??
+            playerWaveStyle.getSamplesForWidth(widget.screenWidth * 0.5),
+        ).then((_) {
+          controller.seekTo(0);
+          controller.setVolume(1.0);
+          // Reset position to start for replay
         });
       }
     });
-
-
   }
+
 
   @override
   void dispose() {
@@ -170,10 +175,10 @@ class _VoiceMessageViewState extends State<VoiceMessageView> {
           controller.seekTo(0); // Reset position to start for replay
         });
       }
+      controller.setVolume(1.0);
       controller.startPlayer();
     } else {
       controller.pausePlayer();
     }
   }
-
 }

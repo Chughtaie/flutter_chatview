@@ -21,7 +21,6 @@
  */
 import 'dart:convert';
 import 'dart:io' if (kIsWeb) 'dart:html';
-
 import 'package:chatview/chatview.dart';
 import 'package:chatview/src/extensions/extensions.dart';
 import 'package:chatview/src/utils/package_strings.dart';

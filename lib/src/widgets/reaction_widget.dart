@@ -71,15 +71,16 @@ class _ReactionWidgetState extends State<ReactionWidget> {
       bottom: 0,
       right: widget.isMessageBySender && needToExtend ? 0 : null,
       child: InkWell(
-        onTap: () => chatController != null
-            ? ReactionsBottomSheet().show(
-                context: context,
-                reaction: widget.reaction,
-                chatController: chatController!,
-                reactionsBottomSheetConfig:
-                    messageReactionConfig?.reactionsBottomSheetConfig,
-              )
-            : null,
+        onTap: null,
+        // chatController != null
+        //     ? ReactionsBottomSheet().show(
+        //         context: context,
+        //         reaction: widget.reaction,
+        //         chatController: chatController!,
+        //         reactionsBottomSheetConfig:
+        //             messageReactionConfig?.reactionsBottomSheetConfig,
+        //       )
+        //     : null,
         child: MeasureSize(
           onSizeChange: (extend) => setState(() => needToExtend = extend),
           child: Container(

@@ -22,6 +22,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show File, Platform;
+import 'package:flutter/cupertino.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:chatview/src/extensions/extensions.dart';
@@ -237,19 +239,24 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300), // Adjust the duration as needed
                     child: showSendButton
-                        ? IconButton(
-                      key: ValueKey('sendButton'), // Unique key for the widget
-                      color: sendMessageConfig?.defaultSendButtonColor ?? Colors.green,
-                      onPressed: (textFieldConfig?.enabled ?? true)
-                          ? () {
-                        widget.onPressed();
-                        _inputText.value = '';
-                      }
-                          : null,
-                      icon: sendMessageConfig?.sendButtonIcon ?? const Icon(Icons.send),
-                    )
+                        ? Row(
+                          children: [
+                            const SizedBox(width: 60,),
+                            IconButton(
+                                                  key: ValueKey('sendButton'), // Unique key for the widget
+                                                  color: sendMessageConfig?.defaultSendButtonColor ?? Colors.green,
+                                                  onPressed: (textFieldConfig?.enabled ?? true)
+                              ? () {
+                            widget.onPressed();
+                            _inputText.value = '';
+                                                  }
+                              : null,
+                                                  icon: sendMessageConfig?.sendButtonIcon ?? const Icon(Icons.send),
+                                                ),
+                          ],
+                        )
                         : Row(
-                      key: ValueKey('iconRow'), // Unique key for the widget
+                      key: const ValueKey('iconRow'), // Unique key for the widget
                       children: [
                         if (!isRecordingValue) ...[
                           if (sendMessageConfig?.enableCameraImagePicker ?? true)
@@ -386,6 +393,22 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
     "Voice messages are only supported with android and ios platform",
     );
 
+    // Check for microphone and speech recognition permissions
+    final micPermissionStatus = await Permission.microphone.status;
+    final speechPermissionStatus = await Permission.speech.status;
+
+    if (!micPermissionStatus.isGranted || !speechPermissionStatus.isGranted) {
+      // If permissions are not granted, request them
+      final micPermissionResult = await Permission.microphone.request();
+      final speechPermissionResult = await Permission.speech.request();
+
+      if (!micPermissionResult.isGranted || !speechPermissionResult.isGranted) {
+        // If permissions are still not granted, show a dialog to navigate to settings
+        _showPermissionDeniedDialog();
+        return;
+      }
+    }
+
     final stt.SpeechToText speech = stt.SpeechToText();
     bool isSpeechAvailable = false;
 
@@ -400,7 +423,7 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
           },
           listenFor: const Duration(minutes: 1), // Listen for a longer duration
           pauseFor: const Duration(seconds: 5), // Pause for a short duration
-        partialResults: true
+          partialResults: true,
         );
 
         await controller?.record(
@@ -425,12 +448,93 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
         "path": path,
         "text": recognizedText,
       });
-
       // Send the result
       widget.onRecordingComplete(result);
       isRecording.value = false;
     }
   }
+
+  void _showPermissionDeniedDialog() {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: const Text("Permissions Required"),
+          content: const Text(
+            "Enable microphone and speech recognition permissions in settings to record and send voice messages.",
+          ),
+          actions: <CupertinoDialogAction>[
+            CupertinoDialogAction(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Cancel",style: TextStyle(color: Colors.red,fontSize: 14),),
+            ),
+            CupertinoDialogAction(
+              onPressed: () {
+                Navigator.of(context).pop();
+                openAppSettings(); // Navigate to app settings
+              },
+              isDefaultAction: true,
+              child: const Text("Settings",style: TextStyle(color: Colors.blue,fontSize: 14),),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Future<void> _recordOrStop() async {
+  //   assert(
+  //   defaultTargetPlatform == TargetPlatform.iOS ||
+  //       defaultTargetPlatform == TargetPlatform.android,
+  //   "Voice messages are only supported with android and ios platform",
+  //   );
+  //
+  //
+  //
+  //   final stt.SpeechToText speech = stt.SpeechToText();
+  //   bool isSpeechAvailable = false;
+  //
+  //   if (!isRecording.value) {
+  //     // Start recording and speech recognition
+  //     isSpeechAvailable = await speech.initialize();
+  //     if (isSpeechAvailable) {
+  //       speech.listen(
+  //         onResult: (result) {
+  //           recognizedText = result.recognizedWords; // Update recognized text
+  //           debugPrint("Recognized Text: $recognizedText");
+  //         },
+  //         listenFor: const Duration(minutes: 1), // Listen for a longer duration
+  //         pauseFor: const Duration(seconds: 5), // Pause for a short duration
+  //       partialResults: true
+  //       );
+  //
+  //       await controller?.record(
+  //         sampleRate: voiceRecordingConfig?.sampleRate,
+  //         bitRate: voiceRecordingConfig?.bitRate,
+  //         androidEncoder: voiceRecordingConfig?.androidEncoder,
+  //         iosEncoder: voiceRecordingConfig?.iosEncoder,
+  //         androidOutputFormat: voiceRecordingConfig?.androidOutputFormat,
+  //       );
+  //       isRecording.value = true;
+  //     } else {
+  //       print("Speech recognition not available");
+  //     }
+  //   } else {
+  //     // Stop recording and speech recognition
+  //     final path = await controller?.stop();
+  //     speech.stop();
+  //     // Ensure recognizedText is updated
+  //     debugPrint("Final Recognized Text: $recognizedText");
+  //     // Convert map to JSON string
+  //     String result = jsonEncode({
+  //       "path": path,
+  //       "text": recognizedText,
+  //     });
+  //     // Send the result
+  //     widget.onRecordingComplete(result);
+  //     isRecording.value = false;
+  //   }
+  // }
 
 
   void _onIconPressed(
